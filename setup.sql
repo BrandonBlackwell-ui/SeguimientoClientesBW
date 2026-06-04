@@ -4,10 +4,10 @@
 -- ============================================
 
 -- Eliminar tabla si existe (para re-crear limpio)
-DROP TABLE IF EXISTS sc;
+DROP TABLE IF EXISTS "DashboardSeguimientoClientes";
 
 -- Crear tabla
-CREATE TABLE sc (
+CREATE TABLE "DashboardSeguimientoClientes" (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nombre TEXT NOT NULL,
   sector TEXT DEFAULT '',
@@ -81,17 +81,17 @@ CREATE TABLE sc (
 );
 
 -- Habilitar Row Level Security
-ALTER TABLE sc ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "DashboardSeguimientoClientes" ENABLE ROW LEVEL SECURITY;
 
 -- Política: permitir todas las operaciones (público)
-CREATE POLICY "Allow all operations" ON sc
+CREATE POLICY "Allow all operations" ON "DashboardSeguimientoClientes"
   FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
 -- Datos iniciales (del cronograma de referencia)
 -- ============================================
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto,
   e3_status, e3_dias,
   alta_portal_status, e4_status, nda_enviado_status, nda_firmado_status,
@@ -102,7 +102,7 @@ VALUES ('GICSA', 'Proyectos Inmob.', 'MAJA', 0,
   'empty', 'empty', 'empty', 'empty',
   'empty', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto, e2_diff,
   e3_status, e3_dias,
   alta_portal_status, alta_portal_dias,
@@ -115,7 +115,7 @@ VALUES ('Total Play', 'Telecomunicaciones', 'CHUY', 0,
   'empty', 'empty', 'empty',
   'empty', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto,
   e3_status, alta_portal_status, e4_status,
   nda_enviado_status, nda_firmado_status, nda_firmado_dias,
@@ -126,7 +126,7 @@ VALUES ('Coast Oil', 'Energía', 'ALONSO', 0,
   'closed', 'current_critico', 9,
   'empty', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto,
   e3_status, alta_portal_status, e4_status,
   nda_enviado_status, nda_firmado_status, nda_firmado_dias,
@@ -139,7 +139,7 @@ VALUES ('MTV', 'Media', 'JESÚS', 0,
   'current_rojo_int', 3,
   'e6b', 'con comentarios', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto,
   e3_status, alta_portal_status, e4_status,
   nda_enviado_status, nda_firmado_status,
@@ -152,7 +152,7 @@ VALUES ('Nuvoil', 'Energía', 'ALONSO', 0,
   'empty', 'e6a', 'sin comentarios',
   'current_verde', 1);
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto,
   e2_status,
   e3_status, alta_portal_status, e4_status,
@@ -165,7 +165,7 @@ VALUES ('Apollo', 'Consultoría', 'MAJA', 0,
   'empty', 'empty',
   'empty', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e1_dias,
   e2_status, e3_status, alta_portal_status, e4_status,
   nda_enviado_status, nda_firmado_status,
@@ -176,7 +176,7 @@ VALUES ('Karpowership', 'Energía', 'CEO', 0,
   'empty', 'empty',
   'empty', 'empty');
 
-INSERT INTO sc (nombre, sector, responsable, notas_count,
+INSERT INTO "DashboardSeguimientoClientes" (nombre, sector, responsable, notas_count,
   e1_status, e1_monto, e2_status, e2_monto,
   e3_status, alta_portal_status,
   e4_status, e4_dias,
@@ -193,17 +193,17 @@ VALUES ('P.P.A', 'Industrial', 'JESÚS', 0,
 -- Tabla de Comentarios
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS comentarios (
+CREATE TABLE IF NOT EXISTS "ComentariosDBSeguimientoClientes" (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  cliente_id UUID REFERENCES sc(id) ON DELETE CASCADE,
+  cliente_id UUID REFERENCES "DashboardSeguimientoClientes"(id) ON DELETE CASCADE,
   autor TEXT NOT NULL,
   texto TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Habilitar RLS en comentarios
-ALTER TABLE comentarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ComentariosDBSeguimientoClientes" ENABLE ROW LEVEL SECURITY;
 
 -- Política de acceso para comentarios
-CREATE POLICY "Allow all operations on comments" ON comentarios
+CREATE POLICY "Allow all operations on comments" ON "ComentariosDBSeguimientoClientes"
   FOR ALL USING (true) WITH CHECK (true);

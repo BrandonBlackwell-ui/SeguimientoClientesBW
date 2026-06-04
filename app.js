@@ -174,7 +174,7 @@ function bindEvents() {
 // ——— FETCH DATA ———
 async function fetchClientes() {
   showLoading(true);
-  const { data, error } = await db.from('sc').select('*').order('created_at', { ascending: true });
+  const { data, error } = await db.from('DashboardSeguimientoClientes').select('*').order('created_at', { ascending: true });
 
   if (error) {
     console.error('Error fetching:', error);
@@ -549,7 +549,7 @@ async function setStatus(clienteId, field, value) {
     updated_at: nowStr
   };
 
-  const { error } = await db.from('sc').update(updates).eq('id', clienteId);
+  const { error } = await db.from('DashboardSeguimientoClientes').update(updates).eq('id', clienteId);
 
   if (error) {
     toast('Error al actualizar: ' + error.message, 'error');
@@ -566,7 +566,7 @@ async function setDias(clienteId, field, value) {
   if (cliente) cliente[field] = dias;
   renderTable();
 
-  const { error } = await db.from('sc').update({ [field]: dias, updated_at: new Date().toISOString() }).eq('id', clienteId);
+  const { error } = await db.from('DashboardSeguimientoClientes').update({ [field]: dias, updated_at: new Date().toISOString() }).eq('id', clienteId);
   if (error) {
     toast('Error al actualizar días: ' + error.message, 'error');
     await fetchClientes();
@@ -596,7 +596,7 @@ async function setMonto(clienteId, field, value) {
   
   renderTable();
 
-  const { error } = await db.from('sc').update(updates).eq('id', clienteId);
+  const { error } = await db.from('DashboardSeguimientoClientes').update(updates).eq('id', clienteId);
   if (error) {
     toast('Error al actualizar monto: ' + error.message, 'error');
     await fetchClientes();
@@ -637,7 +637,7 @@ async function setE6(clienteId, value) {
   
   renderTable();
 
-  const { error } = await db.from('sc').update(updates).eq('id', clienteId);
+  const { error } = await db.from('DashboardSeguimientoClientes').update(updates).eq('id', clienteId);
   if (error) {
     toast('Error al actualizar E6: ' + error.message, 'error');
     await fetchClientes();
@@ -657,7 +657,7 @@ async function deleteCliente(id) {
   clientes = clientes.filter(c => c.id !== id);
   renderTable();
 
-  const { error } = await db.from('sc').delete().eq('id', id);
+  const { error } = await db.from('DashboardSeguimientoClientes').delete().eq('id', id);
 
   if (error) {
     toast('Error al eliminar: ' + error.message, 'error');
@@ -756,7 +756,7 @@ async function handleSave() {
 
   closeModal();
 
-  const { data, error } = await db.from('sc').insert([newCliente]).select();
+  const { data, error } = await db.from('DashboardSeguimientoClientes').insert([newCliente]).select();
 
   if (error) {
     toast('Error al guardar: ' + error.message, 'error');
@@ -824,7 +824,7 @@ async function toggleTipoPago(clienteId) {
   cliente.tipo_pago = nextValue;
   renderTable();
   
-  const { error } = await db.from('sc').update({ tipo_pago: nextValue, updated_at: new Date().toISOString() }).eq('id', clienteId);
+  const { error } = await db.from('DashboardSeguimientoClientes').update({ tipo_pago: nextValue, updated_at: new Date().toISOString() }).eq('id', clienteId);
   if (error) {
     toast('Error al actualizar tipo de pago: ' + error.message, 'error');
     await fetchClientes();
@@ -1146,7 +1146,7 @@ async function fetchAndRenderComments(clienteId) {
   listEl.innerHTML = '<div class="loading-overlay" style="padding:20px 0;"><span class="loading-dot"></span> Cargando notas…</div>';
 
   const { data, error } = await db
-    .from('comentarios')
+    .from('ComentariosDBSeguimientoClientes')
     .select('*')
     .eq('cliente_id', clienteId)
     .order('created_at', { ascending: false });
@@ -1207,7 +1207,7 @@ async function handleSaveComment() {
   const btn = document.getElementById('btn-save-comment');
   btn.disabled = true;
 
-  const { data, error } = await db.from('comentarios').insert([
+  const { data, error } = await db.from('ComentariosDBSeguimientoClientes').insert([
     {
       cliente_id: currentOpenClienteId,
       autor: user,
@@ -1227,7 +1227,7 @@ async function handleSaveComment() {
   const cliente = clientes.find(c => c.id === currentOpenClienteId);
   if (cliente) {
     cliente.notas_count = (cliente.notas_count || 0) + 1;
-    await db.from('sc').update({ notas_count: cliente.notas_count }).eq('id', currentOpenClienteId);
+    await db.from('DashboardSeguimientoClientes').update({ notas_count: cliente.notas_count }).eq('id', currentOpenClienteId);
   }
 
   await fetchAndRenderComments(currentOpenClienteId);
