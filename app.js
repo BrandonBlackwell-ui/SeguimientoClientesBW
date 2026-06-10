@@ -174,7 +174,11 @@ function bindEvents() {
 // ——— FETCH DATA ———
 async function fetchClientes() {
   showLoading(true);
-  const { data, error } = await db.from('DashboardSeguimientoClientes').select('*').order('pinned', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+  const { data, error } = await db.from('DashboardSeguimientoClientes')
+    .select('*')
+    .order('pinned', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching:', error);
@@ -211,11 +215,17 @@ function renderTable() {
 
   $emptyState.style.display = 'none';
 
-  // Sort: pinned first, then by created_at desc
+  // Sort: pinned first, then by created_at desc, then by updated_at desc
   const sorted = [...clientes].sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    return new Date(b.created_at) - new Date(a.created_at);
+    
+    const timeA = new Date(a.created_at).getTime();
+    const timeB = new Date(b.created_at).getTime();
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
   sorted.forEach(c => {
