@@ -55,6 +55,9 @@ button { background: none; border: none; font: inherit; color: inherit; cursor: 
   max-width: 1520px;
   margin: 0 auto;
   padding: 32px 40px 80px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* ——— TOPBAR ——— */
@@ -67,6 +70,10 @@ button { background: none; border: none; font: inherit; color: inherit; cursor: 
   margin-bottom: 28px;
   gap: 24px;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
 }
 
 .brand-block {
@@ -230,8 +237,9 @@ table.tablero thead th {
   color: var(--ink-700);
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 10;
   vertical-align: bottom;
+  box-shadow: 0 1px 0 var(--ink-800);
 }
 
 table.tablero thead th .col-step {
@@ -1534,4 +1542,96 @@ table.tablero tr:hover .row-actions {
   background: rgba(20, 36, 92, 0.04);
   color: var(--ink-800);
   border-color: var(--ink-800);
+}
+
+/* ——— EDITABLE RESPONSABLE ——— */
+.editable-resp {
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  min-width: 60px;
+  display: inline-block;
+}
+
+.editable-resp:hover {
+  background: var(--paper-edge);
+  border-color: var(--ink-600);
+  color: var(--ink-900);
+}
+
+.editable-resp:hover::after {
+  content: ' ✏️';
+  font-size: 8px;
+  opacity: 0.6;
+}
+
+.resp-inline-input {
+  border: 1.5px solid var(--ink-700);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink-900);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  outline: none;
+  width: 100%;
+  min-width: 90px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.resp-inline-input:focus {
+  border-color: var(--ink-900);
+  box-shadow: 0 0 0 2px rgba(20, 36, 92, 0.12);
+}
+
+/* ——— PINNED ROWS ——— */
+.pinned-row {
+  background: rgba(20, 36, 92, 0.025);
+  border-left: 2.5px solid var(--ink-600) !important;
+  position: relative;
+}
+
+.pinned-row td:first-child {
+  padding-left: 12px;
+}
+
+.pin-indicator {
+  font-size: 10px;
+  margin-right: 4px;
+  vertical-align: middle;
+  opacity: 0.75;
+}
+
+/* Pin button */
+.ra-pin {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink-700);
+  background: var(--paper-bright);
+  transition: all 0.12s;
+}
+
+.ra-pin:hover {
+  border-color: var(--ink-600);
+  background: rgba(20, 36, 92, 0.06);
+  color: var(--ink-900);
+}
+
+.ra-pin.is-pinned {
+  border-color: var(--ink-700);
+  background: rgba(20, 36, 92, 0.08);
+  color: var(--ink-800);
+  font-weight: 600;
+}
+
+.ra-pin.is-pinned:hover {
+  border-color: var(--crimson);
+  background: rgba(180, 58, 58, 0.04);
+  color: var(--crimson);
 }

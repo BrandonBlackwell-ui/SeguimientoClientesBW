@@ -174,7 +174,7 @@ function bindEvents() {
 // ——— FETCH DATA ———
 async function fetchClientes() {
   showLoading(true);
-  const { data, error } = await db.from('DashboardSeguimientoClientes').select('*').order('created_at', { ascending: true });
+  const { data, error } = await db.from('DashboardSeguimientoClientes').select('*').order('pinned', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching:', error);
@@ -200,18 +200,29 @@ function renderTable() {
 
   $emptyState.style.display = 'none';
 
-  clientes.forEach(c => {
+  // Sort: pinned first, then by created_at desc
+  const sorted = [...clientes].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  sorted.forEach(c => {
     const tr = document.createElement('tr');
     tr.dataset.id = c.id;
+    if (c.pinned) tr.classList.add('pinned-row');
 
     const notesCount = c.notas_count || 0;
     const notesText = notesCount > 0 ? `NOTAS ${notesCount}` : 'Añadir Nota';
     const notesClass = notesCount > 0 ? 'notes-pill' : 'notes-pill empty';
     const isPlazos = c.tipo_pago && c.tipo_pago.includes('A plazos');
+    const pinIcon = c.pinned ? '📌' : '📍';
+    const pinTitle = c.pinned ? 'Desanclar' : 'Anclar arriba';
 
     tr.innerHTML = `
       <td>
         <div>
+          ${c.pinned ? '<span class="pin-indicator" title="Anclado">📌</span>' : ''}
           <span class="cli-name">${esc(c.nombre)}</span>
           <span class="${notesClass}" onclick="openCommentsDrawer('${c.id}')"><span class="notes-icon">📝</span> ${notesText}</span>
         </div>
@@ -223,11 +234,12 @@ function renderTable() {
           </span>
         </div>
         <div class="row-actions">
+          <button class="ra-pin ${c.pinned ? 'is-pinned' : ''}" onclick="togglePin('${c.id}')" title="${pinTitle}">${pinIcon} ${c.pinned ? 'Desanclar' : 'Anclar'}</button>
           <button class="ra-del" onclick="deleteCliente('${c.id}')" title="Eliminar cliente">✕ Eliminar</button>
         </div>
       </td>
       <td>
-        <span class="resp-badge">${esc(c.responsable)}</span>
+        <span class="resp-badge editable-resp" onclick="startEditResponsable(this, '${c.id}', '${esc(c.responsable || '')}')" title="Click para editar responsable">${esc(c.responsable || '—')}</span>
       </td>
       ${renderStageCell(c, 'e1')}
       ${renderStageCell(c, 'e2')}
@@ -813,6 +825,85 @@ function handleAddNewResponsable() {
   populateResponsablesDropdown();
   document.getElementById('f-responsable').value = trimmed;
   toast(`Responsable "${trimmed}" agregado`, 'success');
+}
+
+// ——— EDITABLE RESPONSABLE IN TABLE ———
+function startEditResponsable(el, clienteId, currentVal) {
+  // Prevent double-editing
+  if (el.querySelector('input')) return;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentVal === '—' ? '' : currentVal;
+  input.className = 'resp-inline-input';
+  input.placeholder = 'Responsable...';
+
+  el.textContent = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+
+  const save = async () => {
+    const newVal = input.value.trim();
+    el.removeEventListener('click', blockClick);
+    el.textContent = newVal || '—';
+    if (newVal === currentVal) return;
+    await updateResponsable(clienteId, newVal);
+  };
+
+  const blockClick = (e) => e.stopPropagation();
+  el.addEventListener('click', blockClick);
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { input.blur(); }
+    if (e.key === 'Escape') {
+      el.textContent = currentVal || '—';
+    }
+    e.stopPropagation();
+  });
+}
+
+async function updateResponsable(clienteId, newVal) {
+  const cliente = clientes.find(c => c.id === clienteId);
+  if (!cliente) return;
+  const oldVal = cliente.responsable;
+  cliente.responsable = newVal;
+
+  const { error } = await db.from('DashboardSeguimientoClientes')
+    .update({ responsable: newVal, updated_at: new Date().toISOString() })
+    .eq('id', clienteId);
+
+  if (error) {
+    toast('Error al actualizar responsable: ' + error.message, 'error');
+    cliente.responsable = oldVal;
+    renderTable();
+  } else {
+    updateTimestamp();
+    toast(`Responsable actualizado a "${newVal || '(vacío)'}"`, 'success');
+  }
+}
+
+// ——— PIN / UNPIN ———
+async function togglePin(clienteId) {
+  const cliente = clientes.find(c => c.id === clienteId);
+  if (!cliente) return;
+  const newPinned = !cliente.pinned;
+  cliente.pinned = newPinned;
+  renderTable();
+
+  const { error } = await db.from('DashboardSeguimientoClientes')
+    .update({ pinned: newPinned, updated_at: new Date().toISOString() })
+    .eq('id', clienteId);
+
+  if (error) {
+    toast('Error al anclar: ' + error.message, 'error');
+    cliente.pinned = !newPinned;
+    renderTable();
+  } else {
+    toast(newPinned ? '📌 Cliente anclado arriba' : 'Cliente desanclado', 'success');
+    updateTimestamp();
+  }
 }
 
 // ——— TOGGLE TIPO PAGO IN TABLE ———

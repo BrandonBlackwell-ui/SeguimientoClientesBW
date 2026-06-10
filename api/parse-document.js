@@ -22,8 +22,9 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'La API Key de Anthropic (Claude) no está configurada.' });
+      return res.status(500).json({ error: 'La API Key de Anthropic (Claude) no está configurada en las variables de entorno del servidor.' });
     }
+
 
     const systemPrompt = `Eres un asistente experto en analizar documentos corporativos, contratos y propuestas comerciales. 
 Tu tarea es extraer información clave del texto o de las imágenes provistas y formatearla estrictamente en formato JSON sin explicaciones adicionales.`;

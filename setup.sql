@@ -77,7 +77,8 @@ CREATE TABLE "DashboardSeguimientoClientes" (
   alta_portal_date TIMESTAMPTZ DEFAULT NULL,
 
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  pinned BOOLEAN DEFAULT FALSE
 );
 
 -- Habilitar Row Level Security
@@ -86,6 +87,13 @@ ALTER TABLE "DashboardSeguimientoClientes" ENABLE ROW LEVEL SECURITY;
 -- Política: permitir todas las operaciones (público)
 CREATE POLICY "Allow all operations" ON "DashboardSeguimientoClientes"
   FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- MIGRACIÓN: Añadir columna pinned a tabla existente
+-- Ejecutar esto si la tabla ya existe y solo quieres agregar la columna
+-- ============================================
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS pinned BOOLEAN DEFAULT FALSE;
+
 
 -- ============================================
 -- Datos iniciales (del cronograma de referencia)
