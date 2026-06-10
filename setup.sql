@@ -78,7 +78,19 @@ CREATE TABLE "DashboardSeguimientoClientes" (
 
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  pinned BOOLEAN DEFAULT FALSE
+  pinned BOOLEAN DEFAULT FALSE,
+
+  -- Responsable por fase
+  e1_resp TEXT DEFAULT NULL,
+  e2_resp TEXT DEFAULT NULL,
+  e3_resp TEXT DEFAULT NULL,
+  e4_resp TEXT DEFAULT NULL,
+  nda_enviado_resp TEXT DEFAULT NULL,
+  nda_firmado_resp TEXT DEFAULT NULL,
+  cto_enviado_resp TEXT DEFAULT NULL,
+  e6_resp TEXT DEFAULT NULL,
+  cto_firmado_resp TEXT DEFAULT NULL,
+  alta_portal_resp TEXT DEFAULT NULL
 );
 
 -- Habilitar Row Level Security
@@ -89,10 +101,20 @@ CREATE POLICY "Allow all operations" ON "DashboardSeguimientoClientes"
   FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
--- MIGRACIÓN: Añadir columna pinned a tabla existente
--- Ejecutar esto si la tabla ya existe y solo quieres agregar la columna
+-- MIGRACIÓN: Añadir columnas a tabla existente
+-- Ejecutar si la tabla ya existe
 -- ============================================
 -- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS pinned BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS e1_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS e2_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS e3_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS e4_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS nda_enviado_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS nda_firmado_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS cto_enviado_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS e6_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS cto_firmado_resp TEXT DEFAULT NULL;
+-- ALTER TABLE "DashboardSeguimientoClientes" ADD COLUMN IF NOT EXISTS alta_portal_resp TEXT DEFAULT NULL;
 
 
 -- ============================================

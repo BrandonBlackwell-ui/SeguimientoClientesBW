@@ -229,38 +229,39 @@ table.tablero {
 table.tablero thead th {
   text-align: left;
   padding: 14px 10px 12px;
-  background: var(--paper-soft);
-  border-bottom: 1px solid var(--ink-800);
+  background: var(--ink-800);
+  border-bottom: 1px solid var(--ink-900);
   font-family: var(--mono);
   font-weight: 600;
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-700);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: rgba(255,255,255,0.75);
   position: sticky;
   top: 0;
   z-index: 10;
   vertical-align: bottom;
-  box-shadow: 0 1px 0 var(--ink-800);
+  box-shadow: 0 2px 0 var(--ink-900);
 }
 
 table.tablero thead th .col-step {
   display: block;
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--ink-900);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #fff;
   font-weight: 700;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  text-transform: none;
 }
 
 table.tablero thead th .col-sub {
   display: block;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 500;
-  color: var(--char);
-  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.04em;
   text-transform: none;
   margin-top: 1px;
 }
@@ -271,34 +272,78 @@ table.tablero th.stage {
 }
 
 table.tablero th.stage.optional {
-  background: repeating-linear-gradient(
-    135deg,
-    transparent,
-    transparent 4px,
-    rgba(20, 36, 92, 0.04) 4px,
-    rgba(20, 36, 92, 0.04) 6px
-  );
+  background: var(--ink-700);
+  opacity: 0.85;
 }
 
 table.tablero th.stage.optional .col-step {
-  color: var(--char);
+  color: rgba(255,255,255,0.75);
   font-style: italic;
 }
 
-table.tablero th.client-col { min-width: 180px; }
-table.tablero th.resp-col { min-width: 96px; }
+table.tablero th.client-col { min-width: 190px; }
 table.tablero th.sub-col { min-width: 118px; }
 
 table.tablero td {
-  padding: 16px 10px;
+  padding: 14px 10px;
   border-bottom: 1px solid var(--rule-soft);
   vertical-align: middle;
+}
+
+/* Alternating row colors */
+table.tablero tbody tr:nth-child(odd) {
+  background: var(--paper-bright);
+}
+
+table.tablero tbody tr:nth-child(even) {
+  background: rgba(20, 36, 92, 0.032);
+}
+
+table.tablero tbody tr.pinned-row {
+  background: rgba(20, 36, 92, 0.07) !important;
+}
+
+table.tablero tbody tr:hover {
+  background: rgba(20, 36, 92, 0.055) !important;
 }
 
 table.tablero tr:last-child td { border-bottom: none; }
 
 table.tablero td.stage-cell {
   text-align: center;
+}
+
+/* ——— STAGE RESPONSABLE ——— */
+.stage-resp {
+  display: inline-block;
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slate);
+  cursor: pointer;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px dashed transparent;
+  transition: all 0.12s;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-resp:hover {
+  border-color: var(--rule);
+  color: var(--char);
+  background: var(--paper);
+}
+
+.stage-resp.has-value {
+  color: var(--ink-700);
+  font-weight: 600;
+  border-color: rgba(20, 36, 92, 0.15);
+  background: rgba(20, 36, 92, 0.04);
 }
 
 /* ——— CLIENT INFO ——— */

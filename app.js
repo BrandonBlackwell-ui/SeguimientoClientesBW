@@ -238,9 +238,6 @@ function renderTable() {
           <button class="ra-del" onclick="deleteCliente('${c.id}')" title="Eliminar cliente">✕ Eliminar</button>
         </div>
       </td>
-      <td>
-        <span class="resp-badge editable-resp" onclick="startEditResponsable(this, '${c.id}', '${esc(c.responsable || '')}')" title="Click para editar responsable">${esc(c.responsable || '—')}</span>
-      </td>
       ${renderStageCell(c, 'e1')}
       ${renderStageCell(c, 'e2')}
       ${renderStageCell(c, 'e3')}
@@ -308,6 +305,11 @@ function renderStageCell(cliente, stageKey) {
     captions += `<span class="cap ${capColor}">${elapsedText}</span>`;
   }
 
+  // Responsable for this stage
+  const respField = `${stageKey}_resp`;
+  const respVal = cliente[respField] || '';
+  const respHtml = `<span class="stage-resp ${respVal ? 'has-value' : ''}" onclick="openStageRespEditor(event, '${cliente.id}', '${respField}', '${esc(respVal)}')" title="Responsable de esta etapa">${respVal ? esc(respVal) : '···'}</span>`;
+
   return `
     <td class="stage-cell">
       <div class="cell-stack">
@@ -316,6 +318,7 @@ function renderStageCell(cliente, stageKey) {
               data-field="${statusField}"
               onclick="openPicker(event, '${cliente.id}', '${statusField}')"></span>
         ${captions}
+        ${respHtml}
       </div>
     </td>
   `;
@@ -343,6 +346,10 @@ function renderE6Cell(cliente) {
     captions = `<span class="cap ${capColor}">${elapsedText}</span>`;
   }
 
+  // Responsable for E6
+  const e6Resp = cliente.e6_resp || '';
+  const e6RespHtml = `<span class="stage-resp ${e6Resp ? 'has-value' : ''}" onclick="openStageRespEditor(event, '${cliente.id}', 'e6_resp', '${esc(e6Resp)}')" title="Responsable de comentarios">${e6Resp ? esc(e6Resp) : '···'}</span>`;
+
   if (!subType) {
     return `
       <td class="stage-cell">
@@ -351,6 +358,7 @@ function renderE6Cell(cliente) {
                 onclick="openE6Picker(event, '${cliente.id}')"
                 style="cursor:pointer;">—</span>
           ${captions}
+          ${e6RespHtml}
         </div>
       </td>
     `;
@@ -366,6 +374,7 @@ function renderE6Cell(cliente) {
           <span class="st-desc">${esc(subDesc)}</span>
         </span>
         ${captions}
+        ${e6RespHtml}
       </div>
     </td>
   `;
@@ -454,18 +463,41 @@ function openPicker(event, clienteId, field) {
     `;
   }
 
+  // Add responsable input for stage
+  const stageKey = field.replace('_status', '');
+  const respField = `${stageKey}_resp`;
+  const currentResp = cliente ? (cliente[respField] || '') : '';
+  html += `<div class="sp-sep"></div>`;
+  html += `
+    <div style="padding:6px 10px;">
+      <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--char);display:block;margin-bottom:4px;">Responsable:</span>
+      <input type="text" list="resp-datalist" value="${esc(currentResp)}"
+             placeholder="Nombre o —"
+             style="width:100%;padding:4px 8px;border:1px solid var(--rule);border-radius:2px;font-family:var(--mono);font-size:11px;background:var(--paper);color:var(--ink-900);outline:none;"
+             onchange="setStageResponsable('${clienteId}', '${respField}', this.value)"
+             onclick="event.stopPropagation()">
+    </div>
+    <datalist id="resp-datalist">
+      <option value="Jesus">
+      <option value="Alonso">
+      <option value="Johana">
+      <option value="Marisol">
+      <option value="Fabiola">
+    </datalist>
+  `;
+
   $picker.innerHTML = html;
   $picker.classList.add('is-open');
 
   // Position
-  const pickerW = 200;
+  const pickerW = 220;
   let left = rect.left + rect.width / 2 - pickerW / 2;
   let top  = rect.bottom + 8;
 
   // Keep in viewport
   if (left < 8) left = 8;
   if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
-  if (top + 320 > window.innerHeight) top = rect.top - 320;
+  if (top + 380 > window.innerHeight) top = rect.top - 380;
 
   $picker.style.left = left + 'px';
   $picker.style.top  = top + 'px';
@@ -506,15 +538,29 @@ function openE6Picker(event, clienteId) {
     </div>
   `;
 
+  // Add responsable input for E6
+  const e6RespVal = cliente ? (cliente.e6_resp || '') : '';
+  html += `<div class="sp-sep"></div>`;
+  html += `
+    <div style="padding:6px 10px;">
+      <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--char);display:block;margin-bottom:4px;">Responsable:</span>
+      <input type="text" list="resp-datalist" value="${esc(e6RespVal)}"
+             placeholder="Nombre o —"
+             style="width:100%;padding:4px 8px;border:1px solid var(--rule);border-radius:2px;font-family:var(--mono);font-size:11px;background:var(--paper);color:var(--ink-900);outline:none;"
+             onchange="setStageResponsable('${clienteId}', 'e6_resp', this.value)"
+             onclick="event.stopPropagation()">
+    </div>
+  `;
+
   $picker.innerHTML = html;
   $picker.classList.add('is-open');
 
-  const pickerW = 220;
+  const pickerW = 240;
   let left = rect.left + rect.width / 2 - pickerW / 2;
   let top  = rect.bottom + 8;
   if (left < 8) left = 8;
   if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
-  if (top + 240 > window.innerHeight) top = rect.top - 240;
+  if (top + 340 > window.innerHeight) top = rect.top - 340;
 
   $picker.style.left = left + 'px';
   $picker.style.top  = top + 'px';
@@ -884,6 +930,77 @@ async function updateResponsable(clienteId, newVal) {
   }
 }
 
+// ——— STAGE RESPONSABLE ———
+function openStageRespEditor(event, clienteId, respField, currentVal) {
+  event.stopPropagation();
+  const el = event.currentTarget;
+  if (el.querySelector('input')) return;
+
+  const input = document.createElement('input');
+  input.setAttribute('list', 'resp-datalist-inline');
+  input.type = 'text';
+  input.value = currentVal;
+  input.placeholder = 'Responsable...';
+  input.className = 'resp-inline-input';
+  input.style.cssText = 'width:80px;font-size:9px;padding:2px 5px;text-transform:uppercase;';
+
+  // Datalist for autocomplete
+  let dl = document.getElementById('resp-datalist-inline');
+  if (!dl) {
+    dl = document.createElement('datalist');
+    dl.id = 'resp-datalist-inline';
+    ['Jesus','Alonso','Johana','Marisol','Fabiola'].forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      dl.appendChild(opt);
+    });
+    document.body.appendChild(dl);
+  }
+
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+
+  const save = async () => {
+    const newVal = input.value.trim();
+    el.textContent = newVal || '···';
+    el.className = `stage-resp ${newVal ? 'has-value' : ''}`;
+    if (newVal === currentVal) return;
+    await setStageResponsable(clienteId, respField, newVal);
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') {
+      el.textContent = currentVal || '···';
+      el.className = `stage-resp ${currentVal ? 'has-value' : ''}`;
+    }
+    e.stopPropagation();
+  });
+  input.addEventListener('click', e => e.stopPropagation());
+}
+
+async function setStageResponsable(clienteId, respField, value) {
+  const cliente = clientes.find(c => c.id === clienteId);
+  if (!cliente) return;
+  const oldVal = cliente[respField];
+  cliente[respField] = value;
+
+  const { error } = await db.from('DashboardSeguimientoClientes')
+    .update({ [respField]: value || null, updated_at: new Date().toISOString() })
+    .eq('id', clienteId);
+
+  if (error) {
+    toast('Error al guardar responsable: ' + error.message, 'error');
+    cliente[respField] = oldVal;
+    renderTable();
+  } else {
+    updateTimestamp();
+  }
+}
+
 // ——— PIN / UNPIN ———
 async function togglePin(clienteId) {
   const cliente = clientes.find(c => c.id === clienteId);
@@ -905,6 +1022,7 @@ async function togglePin(clienteId) {
     updateTimestamp();
   }
 }
+
 
 // ——— TOGGLE TIPO PAGO IN TABLE ———
 async function toggleTipoPago(clienteId) {
