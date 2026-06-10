@@ -184,6 +184,17 @@ async function fetchClientes() {
   }
 
   clientes = data || [];
+
+  // Normalizar los responsables de clientes y etapas
+  clientes.forEach(c => {
+    if (c.responsable) c.responsable = formatResponsableName(c.responsable);
+    const stages = ['e1', 'e2', 'e3', 'e4', 'nda_enviado', 'nda_firmado', 'cto_enviado', 'e6', 'cto_firmado', 'alta_portal'];
+    stages.forEach(s => {
+      const respField = `${s}_resp`;
+      if (c[respField]) c[respField] = formatResponsableName(c[respField]);
+    });
+  });
+
   populateResponsablesDropdown();
   renderTable();
   showLoading(false);
@@ -752,7 +763,7 @@ function closeModal() {
 async function handleSave() {
   const nombre = document.getElementById('f-nombre').value.trim();
   const sector = document.getElementById('f-sector').value.trim();
-  const responsable = document.getElementById('f-responsable').value;
+  const responsable = formatResponsableName(document.getElementById('f-responsable').value);
   const monto  = parseFloat(document.getElementById('f-monto').value) || 0;
   const tipo_pago = document.getElementById('f-tipo-pago').value || 'Pago único';
   const descripcion = document.getElementById('f-descripcion').value.trim() || null;
@@ -864,13 +875,15 @@ function handleAddNewResponsable() {
   const trimmed = name.trim();
   if (trimmed === '') return;
   
-  if (!defaultResponsables.includes(trimmed)) {
-    defaultResponsables.push(trimmed);
+  const formatted = formatResponsableName(trimmed);
+  
+  if (!defaultResponsables.includes(formatted)) {
+    defaultResponsables.push(formatted);
   }
   
   populateResponsablesDropdown();
-  document.getElementById('f-responsable').value = trimmed;
-  toast(`Responsable "${trimmed}" agregado`, 'success');
+  document.getElementById('f-responsable').value = formatted;
+  toast(`Responsable "${formatted}" agregado`, 'success');
 }
 
 // ——— EDITABLE RESPONSABLE IN TABLE ———
@@ -911,13 +924,14 @@ function startEditResponsable(el, clienteId, currentVal) {
 }
 
 async function updateResponsable(clienteId, newVal) {
+  const formattedVal = formatResponsableName(newVal);
   const cliente = clientes.find(c => c.id === clienteId);
   if (!cliente) return;
   const oldVal = cliente.responsable;
-  cliente.responsable = newVal;
+  cliente.responsable = formattedVal;
 
   const { error } = await db.from('DashboardSeguimientoClientes')
-    .update({ responsable: newVal, updated_at: new Date().toISOString() })
+    .update({ responsable: formattedVal || null, updated_at: new Date().toISOString() })
     .eq('id', clienteId);
 
   if (error) {
@@ -926,7 +940,7 @@ async function updateResponsable(clienteId, newVal) {
     renderTable();
   } else {
     updateTimestamp();
-    toast(`Responsable actualizado a "${newVal || '(vacío)'}"`, 'success');
+    toast(`Responsable actualizado a "${formattedVal || '(vacío)'}"`, 'success');
   }
 }
 
@@ -942,7 +956,7 @@ function openStageRespEditor(event, clienteId, respField, currentVal) {
   input.value = currentVal;
   input.placeholder = 'Responsable...';
   input.className = 'resp-inline-input';
-  input.style.cssText = 'width:80px;font-size:9px;padding:2px 5px;text-transform:uppercase;';
+  input.style.cssText = 'width:80px;font-size:9px;padding:2px 5px;';
 
   // Datalist for autocomplete
   let dl = document.getElementById('resp-datalist-inline');
@@ -964,10 +978,11 @@ function openStageRespEditor(event, clienteId, respField, currentVal) {
 
   const save = async () => {
     const newVal = input.value.trim();
-    el.textContent = newVal || '···';
-    el.className = `stage-resp ${newVal ? 'has-value' : ''}`;
-    if (newVal === currentVal) return;
-    await setStageResponsable(clienteId, respField, newVal);
+    const formattedVal = formatResponsableName(newVal);
+    el.textContent = formattedVal || '···';
+    el.className = `stage-resp ${formattedVal ? 'has-value' : ''}`;
+    if (formattedVal === currentVal) return;
+    await setStageResponsable(clienteId, respField, formattedVal);
   };
 
   input.addEventListener('blur', save);
@@ -983,13 +998,14 @@ function openStageRespEditor(event, clienteId, respField, currentVal) {
 }
 
 async function setStageResponsable(clienteId, respField, value) {
+  const formattedVal = formatResponsableName(value);
   const cliente = clientes.find(c => c.id === clienteId);
   if (!cliente) return;
   const oldVal = cliente[respField];
-  cliente[respField] = value;
+  cliente[respField] = formattedVal;
 
   const { error } = await db.from('DashboardSeguimientoClientes')
-    .update({ [respField]: value || null, updated_at: new Date().toISOString() })
+    .update({ [respField]: formattedVal || null, updated_at: new Date().toISOString() })
     .eq('id', clienteId);
 
   if (error) {
@@ -1095,7 +1111,7 @@ async function handleDocumentUpload(e) {
     
     if (data.responsable) {
       const respValue = data.responsable.trim();
-      const isInvalid = respValue === respValue.toUpperCase() || respValue.toLowerCase() === 'brandon';
+      const isInvalid = respValue.toLowerCase() === 'brandon';
       if (respValue && !isInvalid) {
         // Buscar coincidencia insensible a mayúsculas
         const matchedResp = defaultResponsables.find(r => r.toLowerCase() === respValue.toLowerCase());
@@ -1103,7 +1119,7 @@ async function handleDocumentUpload(e) {
           document.getElementById('f-responsable').value = matchedResp;
         } else {
           // Capitalizar la primera letra del nombre nuevo para que se vea limpio
-          const formattedName = respValue.charAt(0).toUpperCase() + respValue.slice(1).toLowerCase();
+          const formattedName = formatResponsableName(respValue);
           if (!defaultResponsables.includes(formattedName)) {
             defaultResponsables.push(formattedName);
             populateResponsablesDropdown();
@@ -1196,6 +1212,16 @@ async function readDocxFile(file) {
 }
 
 // ——— HELPERS ———
+function formatResponsableName(name) {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (!trimmed) return '';
+  return trimmed
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 function formatMoney(n) {
   if (!n && n !== 0) return '';
   const num = Number(n);
